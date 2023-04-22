@@ -3,18 +3,19 @@
 import curses
 import requests
 import re
+import json
+mode = ''
 # import mpv
 
-DOMAIN = "allanime.to"
-AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; rv:109.0) Gecko/20100101 Firefox/109.0"
 
-
-def select(screen, options: list = [], title: str = "") -> str:
+def select(screen, options: list = [], title: str = ""):
 
     # Set up screen
     screen.clear()
     screen.addstr(
-        "Use arrow-keys to navigate. Return to submit. Ctl + C to exit. \n", curses.color_pair(2))
+        "Use arrow-keys to navigate. Return to submit. Ctl + C to exit. \n",
+        curses.color_pair(2),
+    )
     screen.addstr(f"{title}:\n\n", curses.color_pair(1))
 
     for i, option in enumerate(options):
@@ -36,13 +37,23 @@ def select(screen, options: list = [], title: str = "") -> str:
         elif key == curses.KEY_DOWN:
             if current_option < len(options) - 1:
                 current_option += 1
+        if key == ord('s') and "S to Search" in title:
+            screen.clear()
+            search(screen)
+            return
+        if key == ord('l') and "L to change language" in title:
+            screen.clear()
+            main(screen)
+            return
         elif key == ord("\n"):
             break
 
         # Update screen
         screen.clear()
         screen.addstr(
-            "Use arrow-keys to navigate. Return to submit. Ctl + C to exit. \n", curses.color_pair(2))
+            "Use arrow-keys to navigate. Return to submit. Ctl + C to exit. \n",
+            curses.color_pair(2),
+        )
         screen.addstr(f"{title}:\n\n", curses.color_pair(1))
         for i, option in enumerate(options):
             if i == current_option:
@@ -53,43 +64,20 @@ def select(screen, options: list = [], title: str = "") -> str:
                 screen.addstr(option + "\n")
         screen.refresh()
 
-    return options[current_option]
+    return current_option
 
 
-def get_anime(prompt, mode):
-    anime_list = []
-    url = f"https://api.{DOMAIN}/allanimeapi"
-    search_gql = "query(        $search: SearchInput        $limit: Int        $page: Int        $translationType: VaildTranslationTypeEnumType        $countryOrigin: VaildCountryOriginEnumType    ) {    shows(        search: $search        limit: $limit        page: $page        translationType: $translationType        countryOrigin: $countryOrigin    ) {        edges {            _id name availableEpisodes __typename       }    }}"
-    headers = {"User-Agent": AGENT}
-    params = {
-        "query": search_gql,
-        "variables": {
-            "search": {
-                "allowAdult": False,
-                "allowUnknown": False,
-                "query": prompt
-            },
-            "limit": 40,
-            "page": 1,
-            "translationType": mode,
-            "countryOrigin": "ALL"
-        }
-    }
-
-    response = requests.get(url, params=params, headers=headers)
+def get_anime(prompt):
+    url = 'https://api.allanime.to/allanimeapi/?query=query($search:SearchInput$limit:Int$page:Int$translationType:VaildTranslationTypeEnumType$countryOrigin:VaildCountryOriginEnumType){shows(search:$search%20limit:$limit%20page:$page%20translationType:$translationType%20countryOrigin:$countryOrigin){edges{_id%20name%20availableEpisodes%20__typename}}}&variables={"search":{"allowAdult":false,"allowUnknown":false,"query":"' + \
+        prompt + '"},"limit":20,"page":1,"translationType":"' + \
+        mode + '","countryOrigin":"ALL"}'
+    response = requests.get(url)
     response.raise_for_status()
 
-    regex = r'_id":"([^"]*)","name":"([^"]*)".*' + mode + '":([1-9][^,]*).*'
-    anime_list = re.findall(regex, response.text)
-
-    print(response.text)
-
-    print(anime_list)
-
-    return ([f"{_id}\t{name} ({episodes} episodes)" for _id, name, episodes in anime_list])
+    return json.loads(response.text)['data']['shows']['edges']
 
 
-def search(screen):
+def search_prompt(screen):
     while True:
         curses.echo()
         curses.curs_set(1)
@@ -109,6 +97,23 @@ def search(screen):
 
         return search_input
 
+def search(screen):
+    while True:
+        anime_list = get_anime(search_prompt(screen))
+        if not anime_list:
+            screen.addstr(
+                "no results found, please try again with a different prompt...\n", curses.color_pair(3))
+            continue
+        try:
+            choice = select(screen, [str(i['name']) for i in anime_list],
+                            f"S to Search, L to change language (currently {mode})")
+        except:
+            screen.addstr(
+                "your search failed, please try again with a different prompt...\n", curses.color_pair(3))
+            continue
+        print(choice)
+        break
+
 
 def main(screen):
     try:
@@ -118,25 +123,25 @@ def main(screen):
         screen.keypad(True)
         curses.start_color()
         curses.use_default_colors()
+        screen.scrollok(True)
 
         # Define color pairs
         curses.init_pair(1, curses.COLOR_GREEN, -1)
         curses.init_pair(2, curses.COLOR_BLACK, -1)
+        curses.init_pair(3, curses.COLOR_RED, -1)
 
-        # get the language
-        language = select(
-            screen, ["Sub (japanese)", "Dub (english)"], "Dub or Sub?")[:3].lower()
+        # get the mode
+        global mode 
+        mode = select(screen, ["Sub (japanese)", "Dub (english)"], "Dub or Sub?")
+        mode = "sub" if mode == 0 else "dub"
         screen.clear()
 
-        # search
-        user_search = search(screen)
-
-        # find matching anime
-        print(get_anime(user_search, language))
+        search(screen)
+        
 
     except KeyboardInterrupt:
         print("anipy escaped.")
-        exit(1)
+        exit()
 
 
 if __name__ == "__main__":
