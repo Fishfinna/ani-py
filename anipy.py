@@ -2,10 +2,9 @@
 
 import curses
 import requests
-import re
 import json
-mode = ''
 # import mpv
+mode = ''
 
 
 def select(screen, options: list = [], title: str = ""):
@@ -18,35 +17,72 @@ def select(screen, options: list = [], title: str = ""):
     )
     screen.addstr(f"{title}:\n\n", curses.color_pair(1))
 
-    for i, option in enumerate(options):
-        if i == 0:
-            screen.addstr(" > ", curses.color_pair(2))
-            screen.addstr(option + "\n", curses.color_pair(1))
-        else:
-            screen.addstr("   ")
-            screen.addstr(option + "\n")
-    screen.refresh()
-
-    # Get user input
     current_option = 0
+    page = 0
+    page_size = min(15, len(options))
+    max_page = (len(options) - 1) // page_size
+
     while True:
+        # Show options for current page
+        page_start = page * page_size
+        page_options = options[page_start: page_start + page_size]
+
+        for i, option in enumerate(page_options):
+            if i == current_option:
+                screen.addstr(" > ", curses.color_pair(2))
+                screen.addstr(option + "\n", curses.color_pair(1))
+            else:
+                screen.addstr("   ")
+                screen.addstr(option + "\n")
+
+        # Show page navigation instructions if needed
+        if max_page > 0:
+            screen.addstr("\n")
+            if page > 0:
+                screen.addstr(" ← ", curses.color_pair(2))
+                screen.addstr("prev  ", curses.color_pair(1))
+            else:
+                screen.addstr("    ")
+            if page < max_page:
+                screen.addstr("next ", curses.color_pair(1))
+                screen.addstr(" → ", curses.color_pair(2))
+
+        screen.refresh()
+
+        # Get user input
         key = screen.getch()
-        if key == curses.KEY_UP:
+        if key in [curses.KEY_UP, ord("w")]:
             if current_option > 0:
                 current_option -= 1
-        elif key == curses.KEY_DOWN:
-            if current_option < len(options) - 1:
+            else:
+                current_option = page_size - 1
+                if max_page > 0 and page > 0:
+                    page -= 1
+        elif key in [curses.KEY_DOWN, ord("s")]:
+            if current_option < page_size - 1 and current_option < len(page_options) - 1:
                 current_option += 1
-        if key == ord('s') and "S to Search" in title:
+            else:
+                current_option = 0
+                if max_page > 0 and page < max_page:
+                    page += 1
+        elif key in [curses.KEY_LEFT, ord("a")]:
+            if page > 0:
+                page -= 1
+                current_option = min(current_option, len(page_options) - 1)
+        elif key in [curses.KEY_RIGHT, ord("d")]:
+            if page < max_page:
+                page += 1
+                current_option = min(current_option, len(page_options) - 1)
+        elif key == ord("\n"):
+            break
+        elif key == ord('s') and "S to Search" in title:
             screen.clear()
             search(screen)
             return
-        if key == ord('l') and "L to change language" in title:
+        elif key == ord('l') and "L to change language" in title:
             screen.clear()
             main(screen)
             return
-        elif key == ord("\n"):
-            break
 
         # Update screen
         screen.clear()
@@ -55,22 +91,14 @@ def select(screen, options: list = [], title: str = ""):
             curses.color_pair(2),
         )
         screen.addstr(f"{title}:\n\n", curses.color_pair(1))
-        for i, option in enumerate(options):
-            if i == current_option:
-                screen.addstr(" > ", curses.color_pair(2))
-                screen.addstr(option + "\n", curses.color_pair(1))
-            else:
-                screen.addstr("   ")
-                screen.addstr(option + "\n")
-        screen.refresh()
 
-    return current_option
+    selected_option = page_start + current_option
+    return selected_option
+
 
 
 def get_anime(prompt):
-    url = 'https://api.allanime.to/allanimeapi/?query=query($search:SearchInput$limit:Int$page:Int$translationType:VaildTranslationTypeEnumType$countryOrigin:VaildCountryOriginEnumType){shows(search:$search%20limit:$limit%20page:$page%20translationType:$translationType%20countryOrigin:$countryOrigin){edges{_id%20name%20availableEpisodes%20__typename}}}&variables={"search":{"allowAdult":false,"allowUnknown":false,"query":"' + \
-        prompt + '"},"limit":20,"page":1,"translationType":"' + \
-        mode + '","countryOrigin":"ALL"}'
+    url = 'https://api.allanime.to/allanimeapi/?query=query($search:SearchInput$limit:Int$page:Int$translationType:VaildTranslationTypeEnumType$countryOrigin:VaildCountryOriginEnumType){shows(search:$search%20limit:$limit%20page:$page%20translationType:$translationType%20countryOrigin:$countryOrigin){edges{_id%20name%20availableEpisodes%20__typename}}}&variables={"search":{"allowAdult":false,"allowUnknown":false,"query":"' + prompt + '"},"limit":40,"page":1,"translationType":"' + mode + '","countryOrigin":"ALL"}'
     response = requests.get(url)
     response.raise_for_status()
 
@@ -97,23 +125,44 @@ def search_prompt(screen):
 
         return search_input
 
+
 def search(screen):
     while True:
         anime_list = get_anime(search_prompt(screen))
         if not anime_list:
             screen.addstr(
-                "no results found, please try again with a different prompt...\n", curses.color_pair(3))
+                "No results found. Please try again with a different prompt.\n", curses.color_pair(3))
             continue
         try:
             choice = select(screen, [str(i['name']) for i in anime_list],
                             f"S to Search, L to change language (currently {mode})")
         except:
             screen.addstr(
-                "your search failed, please try again with a different prompt...\n", curses.color_pair(3))
+                "Your search failed. Please try again with a different prompt.\n", curses.color_pair(3))
             continue
-        print(choice)
+        if choice:
+            episode_number = select(screen, [str(i+1) for i in range(anime_list[choice]['availableEpisodes'][mode])],
+                                    f"S to Search, L to change language(currently {mode})\nSelect your episode") + 1 # compensate for range starting at 0
+            print(episode_number)
         break
 
+def play(screen, episode):
+    # Create an instance of the player
+    player = mpv.MPV()
+    player.play('video.mp4')
+
+    # Control playback with keyboard input
+    while True:
+        key = screen.getch()
+        if key == ord('p'):
+            player.pause = True
+        elif key == ord('r'):
+            player.pause = False
+        elif key == ord('s'):
+            player.stop()
+        elif key == ord('q'):
+            player.terminate()
+            break
 
 def main(screen):
     try:
