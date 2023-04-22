@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import subprocess
 import curses
 import requests
 import json
@@ -92,8 +93,8 @@ def select(screen, options: list = [], title: str = ""):
         )
         screen.addstr(f"{title}:\n\n", curses.color_pair(1))
 
-    selected_option = page_start + current_option
-    return selected_option
+    selected_index = page_start + current_option
+    return (selected_index, options[selected_index])
 
 
 
@@ -104,6 +105,10 @@ def get_anime(prompt):
 
     return json.loads(response.text)['data']['shows']['edges']
 
+
+def get_episode_url(episode) -> str:
+    episode_embed_gql = "query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) { episode(showId: $showId translationType: $translationType episodeString: $episodeString) { episodeString sourceUrls }}"
+    return "test"
 
 def search_prompt(screen):
     while True:
@@ -135,18 +140,18 @@ def search(screen):
             continue
         try:
             choice = select(screen, [str(i['name']) for i in anime_list],
-                            f"S to Search, L to change language (currently {mode})")
+                            f"S to Search, L to change language (currently {mode})")[0]
         except:
             screen.addstr(
                 "Your search failed. Please try again with a different prompt.\n", curses.color_pair(3))
             continue
         if choice:
             episode_number = select(screen, [str(i+1) for i in range(anime_list[choice]['availableEpisodes'][mode])],
-                                    f"S to Search, L to change language(currently {mode})\nSelect your episode") + 1 # compensate for range starting at 0
+                                    f"S to Search, L to change language(currently {mode})\nSelect your episode")[0] + 1  # compensate for range starting at 0
             print(episode_number)
         break
 
-def play(screen, episode):
+def play(screen, episode_url):
     # Create an instance of the player
     player = mpv.MPV()
     player.play('video.mp4')
@@ -165,27 +170,36 @@ def play(screen, episode):
             break
 
 def main(screen):
+    
+    # project set up
+    curses.noecho()
+    curses.cbreak()
+    curses.curs_set(0)
+    screen.keypad(True)
+    curses.start_color()
+    curses.use_default_colors()
+    screen.scrollok(True)
+
+    # Define color pairs
+    curses.init_pair(1, curses.COLOR_GREEN, -1)
+    curses.init_pair(2, curses.COLOR_BLACK, -1)
+    curses.init_pair(3, curses.COLOR_RED, -1)
+
     try:
-        curses.noecho()
-        curses.cbreak()
-        curses.curs_set(0)
-        screen.keypad(True)
-        curses.start_color()
-        curses.use_default_colors()
-        screen.scrollok(True)
-
-        # Define color pairs
-        curses.init_pair(1, curses.COLOR_GREEN, -1)
-        curses.init_pair(2, curses.COLOR_BLACK, -1)
-        curses.init_pair(3, curses.COLOR_RED, -1)
-
         # get the mode
         global mode 
         mode = select(screen, ["Sub (japanese)", "Dub (english)"], "Dub or Sub?")
-        mode = "sub" if mode == 0 else "dub"
+        mode = "sub" if mode[0] == 0 else "dub"
         screen.clear()
 
-        search(screen)
+        # search for the anime
+        episode = search(screen)
+
+        # get the episode url
+        # get_episode_url(episode)
+
+        # play the episode
+        # play()
         
 
     except KeyboardInterrupt:
@@ -195,3 +209,52 @@ def main(screen):
 
 if __name__ == "__main__":
     curses.wrapper(main)
+
+
+# def get_episode_url(id, mode, ep_no, quality):
+#     # get the embed urls of the selected episode
+#     episode_embed_gql = "query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) { episode(showId: $showId translationType: $translationType episodeString: $episodeString) { episodeString sourceUrls }}"
+#     headers = {
+#         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"}
+#     data = {
+#         "query": episode_embed_gql,
+#         "variables": {
+#             "showId": id,
+#             "translationType": mode,
+#             "episodeString": ep_no
+#         }
+#     }
+#     url = f"https://api.allanime.xyz/allanimeapi?{urlencode(data)}"
+#     resp = requests.get(url, headers=headers).json()
+#     source_urls = resp["data"]["episode"]["sourceUrls"]
+
+#     # generate links into sequential files
+#     cache_dir = "/path/to/cache/dir"
+#     provider = 1
+#     for i in range(6):
+#         subprocess.Popen(["generate_link", str(provider)],
+#                          stdout=open(f"{cache_dir}/{i}", "w"))
+#         provider = (provider % 6) + 1
+
+#     # wait for all links to be generated
+#     subprocess.check_call(["wait"])
+
+#     # select the link with matching quality
+#     links = []
+#     for path in glob.glob(f"{cache_dir}/*"):
+#         with open(path) as f:
+#             link = f.read().strip()
+#             link = link.replace("Mp4-", "")
+#             links.append(link)
+#     links.sort(key=lambda x: int(x.split(":")[-1]), reverse=True)
+#     episode = select_quality(links, quality)
+#     if episode is None:
+#         raise Exception("Episode not released!")
+#     return episode
+
+
+# def select_quality(links, quality):
+#     for link in links:
+#         if quality in link:
+#             return link
+#     return None
