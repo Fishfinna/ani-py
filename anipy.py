@@ -1,11 +1,50 @@
 #!/usr/bin/env python3
 
+# general imports
 import subprocess
+import platform
+import os
 import curses
 import requests
 import json
-# import mpv
-mode = ''
+
+# global vars
+mode = ""
+
+
+def install_mpv(screen):
+    """
+    should install mvp onto your computer and add the executable to the path
+    This one makes me the most nervous to code lmao
+    """
+    try:
+        # Check if MPV is already installed
+        subprocess.check_call(['mpv', '--version'],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        # If MPV is not installed, install it
+        print('Installing MPV...')
+        if sys.platform == 'win32':
+            # Windows
+            mpv_url = 'https://sourceforge.net/projects/mpv-player-windows/files/64bit-v3/mpv-x86_64-v3-20230423-git-c7a8e71.7z'
+            subprocess.run(['powershell', '-Command',
+                        f'Invoke-WebRequest -Uri {mpv_url} -OutFile mpv.7z'])
+            subprocess.run(['7z', 'x', '-y', 'mpv.7z', '-oc:\\mpv'])
+            os.remove('mpv.7z')
+        elif sys.platform == 'darwin':
+            # macOS
+            subprocess.run(['brew', 'install', 'mpv'])
+        elif sys.platform.startswith('linux'):
+            # Linux
+            if 'debian' in platform.dist():
+                subprocess.run(['sudo', 'apt-get', 'update'])
+                subprocess.run(['sudo', 'apt-get', 'install', 'mpv'])
+            elif 'fedora' in platform.dist():
+                subprocess.run(['sudo', 'dnf', 'install', 'mpv'])
+            elif 'arch' in platform.dist():
+                subprocess.run(['sudo', 'pacman', '-S', 'mpv'])
+
+        
 
 
 def select(screen, options: list = [], title: str = ""):
@@ -76,14 +115,14 @@ def select(screen, options: list = [], title: str = ""):
                 current_option = min(current_option, len(page_options) - 1)
         elif key == ord("\n"):
             break
-        elif key == ord('s') and "S to Search" in title:
+        elif key == ord('c') and "C to change Search" in title:
             screen.clear()
             search(screen)
-            return
+            return (None, None)
         elif key == ord('l') and "L to change language" in title:
             screen.clear()
             main(screen)
-            return
+            return (None, None)
 
         # Update screen
         screen.clear()
@@ -140,16 +179,29 @@ def search(screen):
             continue
         try:
             choice = select(screen, [str(i['name']) for i in anime_list],
-                            f"S to Search, L to change language (currently {mode})")[0]
+                            f"C to change Search, L to change language (currently {mode})")
         except:
             screen.addstr(
                 "Your search failed. Please try again with a different prompt.\n", curses.color_pair(3))
             continue
         if choice:
-            episode_number = select(screen, [str(i+1) for i in range(anime_list[choice]['availableEpisodes'][mode])],
-                                    f"S to Search, L to change language(currently {mode})\nSelect your episode")[0] + 1  # compensate for range starting at 0
-            print(episode_number)
-        break
+            episode_number = select(screen, [str(i+1) for i in range(anime_list[choice[0]]['availableEpisodes'][mode])],
+                                    f"C to change Search, L to change language (currently {mode})\nSelect your episode of {anime_list[choice[0]]['name']}")[0] + 1
+            if episode_number:
+                url='https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + anime_list[episode_number]["_id"] + '","translationType":"' + mode + '","episodeString": "' + str(episode_number) + '"}'
+                # try:
+                response = requests.get(url)
+                # except:
+                #     screen.addstr(
+                #         "There was an error finding your episode! Please try again with a different prompt. If this error continues please insure you have the latest copy of anipy as you may be using an out of date API.\n", curses.color_pair(3))
+                #     continue
+                episode_url = json.loads(response.text)['data']["episode"]["sourceUrls"][0]["sourceUrl"]
+                print(episode_url)
+            else:
+                screen.addstr(
+                    "There are no episodes for your selected show :(\n", curses.color_pair(3))
+                continue          
+        exit()
 
 def play(screen, episode_url):
     # Create an instance of the player
@@ -185,6 +237,10 @@ def main(screen):
     curses.init_pair(2, curses.COLOR_BLACK, -1)
     curses.init_pair(3, curses.COLOR_RED, -1)
 
+
+    # Set up mpv
+    install_mpv(screen)
+
     try:
         # get the mode
         global mode 
@@ -209,52 +265,3 @@ def main(screen):
 
 if __name__ == "__main__":
     curses.wrapper(main)
-
-
-# def get_episode_url(id, mode, ep_no, quality):
-#     # get the embed urls of the selected episode
-#     episode_embed_gql = "query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) { episode(showId: $showId translationType: $translationType episodeString: $episodeString) { episodeString sourceUrls }}"
-#     headers = {
-#         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"}
-#     data = {
-#         "query": episode_embed_gql,
-#         "variables": {
-#             "showId": id,
-#             "translationType": mode,
-#             "episodeString": ep_no
-#         }
-#     }
-#     url = f"https://api.allanime.xyz/allanimeapi?{urlencode(data)}"
-#     resp = requests.get(url, headers=headers).json()
-#     source_urls = resp["data"]["episode"]["sourceUrls"]
-
-#     # generate links into sequential files
-#     cache_dir = "/path/to/cache/dir"
-#     provider = 1
-#     for i in range(6):
-#         subprocess.Popen(["generate_link", str(provider)],
-#                          stdout=open(f"{cache_dir}/{i}", "w"))
-#         provider = (provider % 6) + 1
-
-#     # wait for all links to be generated
-#     subprocess.check_call(["wait"])
-
-#     # select the link with matching quality
-#     links = []
-#     for path in glob.glob(f"{cache_dir}/*"):
-#         with open(path) as f:
-#             link = f.read().strip()
-#             link = link.replace("Mp4-", "")
-#             links.append(link)
-#     links.sort(key=lambda x: int(x.split(":")[-1]), reverse=True)
-#     episode = select_quality(links, quality)
-#     if episode is None:
-#         raise Exception("Episode not released!")
-#     return episode
-
-
-# def select_quality(links, quality):
-#     for link in links:
-#         if quality in link:
-#             return link
-#     return None
