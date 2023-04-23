@@ -1,50 +1,21 @@
 #!/usr/bin/env python3
 
 # general imports
-import subprocess
-import platform
-import os
 import curses
 import requests
 import json
+import os
+
+# mpv set up
+try:
+    import mpv
+    mpv_is_installed = True
+except:
+    mpv_is_installed = False
+
 
 # global vars
-mode = ""
-
-
-def install_mpv(screen):
-    """
-    should install mvp onto your computer and add the executable to the path
-    This one makes me the most nervous to code lmao
-    """
-    try:
-        # Check if MPV is already installed
-        subprocess.check_call(['mpv', '--version'],
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except subprocess.CalledProcessError:
-        # If MPV is not installed, install it
-        print('Installing MPV...')
-        if sys.platform == 'win32':
-            # Windows
-            mpv_url = 'https://sourceforge.net/projects/mpv-player-windows/files/64bit-v3/mpv-x86_64-v3-20230423-git-c7a8e71.7z'
-            subprocess.run(['powershell', '-Command',
-                        f'Invoke-WebRequest -Uri {mpv_url} -OutFile mpv.7z'])
-            subprocess.run(['7z', 'x', '-y', 'mpv.7z', '-oc:\\mpv'])
-            os.remove('mpv.7z')
-        elif sys.platform == 'darwin':
-            # macOS
-            subprocess.run(['brew', 'install', 'mpv'])
-        elif sys.platform.startswith('linux'):
-            # Linux
-            if 'debian' in platform.dist():
-                subprocess.run(['sudo', 'apt-get', 'update'])
-                subprocess.run(['sudo', 'apt-get', 'install', 'mpv'])
-            elif 'fedora' in platform.dist():
-                subprocess.run(['sudo', 'dnf', 'install', 'mpv'])
-            elif 'arch' in platform.dist():
-                subprocess.run(['sudo', 'pacman', '-S', 'mpv'])
-
-        
+mode = ""    
 
 
 def select(screen, options: list = [], title: str = ""):
@@ -237,10 +208,6 @@ def main(screen):
     curses.init_pair(2, curses.COLOR_BLACK, -1)
     curses.init_pair(3, curses.COLOR_RED, -1)
 
-
-    # Set up mpv
-    install_mpv(screen)
-
     try:
         # get the mode
         global mode 
@@ -252,7 +219,7 @@ def main(screen):
         episode = search(screen)
 
         # get the episode url
-        # get_episode_url(episode)
+        get_episode_url(episode)
 
         # play the episode
         # play()
