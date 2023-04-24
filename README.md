@@ -1,2 +1,3 @@
 # anipy
-a python tool for watching anime, dirrectly from the command line
+
+a python tool for watching anime, directly from the command line

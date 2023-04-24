@@ -5,13 +5,11 @@ import curses
 import requests
 import json
 import os
-
-# mpv set up
-try:
-    import mpv
-    mpv_is_installed = True
-except:
-    mpv_is_installed = False
+path_to_add = os.path.dirname(__file__)
+if path_to_add not in os.environ["PATH"]:
+    os.environ["PATH"] = os.path.dirname(
+        __file__) + os.pathsep + os.environ["PATH"]
+import mpv
 
 
 # global vars
@@ -153,44 +151,44 @@ def search(screen):
                             f"C to change Search, L to change language (currently {mode})")
         except:
             screen.addstr(
-                "Your search failed. Please try again with a different prompt.\n", curses.color_pair(3))
+                "\nYour search failed. Please try again with a different prompt.\n", curses.color_pair(3))
             continue
         if choice:
             episode_number = select(screen, [str(i+1) for i in range(anime_list[choice[0]]['availableEpisodes'][mode])],
                                     f"C to change Search, L to change language (currently {mode})\nSelect your episode of {anime_list[choice[0]]['name']}")[0] + 1
             if episode_number:
-                url='https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + anime_list[episode_number]["_id"] + '","translationType":"' + mode + '","episodeString": "' + str(episode_number) + '"}'
-                # try:
-                response = requests.get(url)
-                # except:
-                #     screen.addstr(
-                #         "There was an error finding your episode! Please try again with a different prompt. If this error continues please insure you have the latest copy of anipy as you may be using an out of date API.\n", curses.color_pair(3))
-                #     continue
-                episode_url = json.loads(response.text)['data']["episode"]["sourceUrls"][0]["sourceUrl"]
-                print(episode_url)
+                url = 'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + anime_list[choice[0]]["_id"] + '","translationType":"' + mode + '","episodeString": "' + str(episode_number) + '"}'
+                try:
+                    response = requests.get(url)
+                except:
+                    screen.addstr(
+                        "There was an error finding your episode! Please try again with a different prompt. If this error continues please insure you have the latest copy of anipy as you may be using an out of date API.\n", curses.color_pair(3))
+                    continue
+                episode_url = [i["sourceUrl"] for i in json.loads(response.text)['data']["episode"]["sourceUrls"] if i["sourceUrl"].startswith("http://") or i["sourceUrl"].startswith("https://")][0]
+                if episode_url:
+                    play(screen, episode_url)
+                else:
+                    print(json.loads(response.text)[
+                          'data']["episode"]["sourceUrls"])
+                    exit()
             else:
                 screen.addstr(
                     "There are no episodes for your selected show :(\n", curses.color_pair(3))
                 continue          
-        exit()
+
 
 def play(screen, episode_url):
     # Create an instance of the player
-    player = mpv.MPV()
-    player.play('video.mp4')
-
-    # Control playback with keyboard input
-    while True:
-        key = screen.getch()
-        if key == ord('p'):
-            player.pause = True
-        elif key == ord('r'):
-            player.pause = False
-        elif key == ord('s'):
-            player.stop()
-        elif key == ord('q'):
-            player.terminate()
-            break
+    player = mpv.MPV(player_operation_mode='pseudo-gui',
+           script_opts='osc-layout=box,osc-seekbarstyle=bar,osc-deadzonesize=0,osc-minmousemove=3',
+           input_default_bindings=True,
+           input_vo_keyboard=True,
+           osc=True)
+    player.play(episode_url)
+    player.wait_for_playback()
+    player.terminate()
+    search(screen)
+    
 
 def main(screen):
     
@@ -220,9 +218,6 @@ def main(screen):
 
         # get the episode url
         get_episode_url(episode)
-
-        # play the episode
-        # play()
         
 
     except KeyboardInterrupt:
