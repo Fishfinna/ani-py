@@ -15,7 +15,6 @@ import mpv
 # global vars
 mode = ""    
 
-
 def select(screen, options: list = [], title: str = ""):
 
     # Set up screen
@@ -114,9 +113,15 @@ def get_anime(prompt):
     return json.loads(response.text)['data']['shows']['edges']
 
 
-def get_episode_url(episode) -> str:
-    episode_embed_gql = "query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) { episode(showId: $showId translationType: $translationType episodeString: $episodeString) { episodeString sourceUrls }}"
-    return "test"
+def get_episode_url(episode_data, screen) -> str:
+    # filter and format
+    episode_url = [i["sourceUrl"] for i in episode_data["sourceUrls"] if i["sourceUrl"].startswith("http://") or i["sourceUrl"].startswith("https://") and i["type"] == "player"]
+    if episode_url:
+        return episode_url[0]
+    else:
+        screen.addstr("No results found. Please try again with a different prompt.\n", curses.color_pair(3))
+        search(screen)
+        
 
 def search_prompt(screen):
     while True:
@@ -143,42 +148,40 @@ def search(screen):
     while True:
         anime_list = get_anime(search_prompt(screen))
         if not anime_list:
-            screen.addstr(
-                "No results found. Please try again with a different prompt.\n", curses.color_pair(3))
+            screen.addstr("No results found. Please try again with a different prompt.\n", curses.color_pair(3))
             continue
         try:
-            choice = select(screen, [str(i['name']) for i in anime_list],
+            choice = select(screen, [str(i['name'].replace("[","").replace("]","")) for i in anime_list],
                             f"C to change Search, L to change language (currently {mode})")
         except:
-            screen.addstr(
-                "\nYour search failed. Please try again with a different prompt.\n", curses.color_pair(3))
+            screen.addstr("\nYour search failed. Please try again with a different prompt.\n", curses.color_pair(3))
             continue
         if choice:
-            episode_number = select(screen, [str(i+1) for i in range(anime_list[choice[0]]['availableEpisodes'][mode])],
-                                    f"C to change Search, L to change language (currently {mode})\nSelect your episode of {anime_list[choice[0]]['name']}")[0] + 1
+            episode_number = select(screen, [str(i+1) for i in range(anime_list[choice[0]]['availableEpisodes'][mode])], f"C to change Search, L to change language (currently {mode})\nSelect your episode of {anime_list[choice[0]]['name']}")[0] + 1
             if episode_number:
                 url = 'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + anime_list[choice[0]]["_id"] + '","translationType":"' + mode + '","episodeString": "' + str(episode_number) + '"}'
                 try:
                     response = requests.get(url)
+                    # episode_url = [i["sourceUrl"] for i in json.loads(response.text)[
+                    #     'data']["episode"]["sourceUrls"] if i["sourceUrl"].startswith("http://") or i["sourceUrl"].startswith("https://")][0]
                 except:
-                    screen.addstr(
-                        "There was an error finding your episode! Please try again with a different prompt. If this error continues please insure you have the latest copy of anipy as you may be using an out of date API.\n", curses.color_pair(3))
+                    screen.addstr("There was an error finding your episode! Please try again with a different prompt. If this error continues please insure you have the latest copy of anipy as you may be using an out of date API.\n", curses.color_pair(3))
                     continue
-                episode_url = [i["sourceUrl"] for i in json.loads(response.text)['data']["episode"]["sourceUrls"] if i["sourceUrl"].startswith("http://") or i["sourceUrl"].startswith("https://")][0]
-                if episode_url:
-                    play(screen, episode_url)
+                
+                if json.loads(response.text)['data']["episode"]["sourceUrls"]:
+                    screen.clear()
+                    screen.addstr("Loading the episode...\n",curses.color_pair(2))
+                    return(json.loads(response.text)['data']['episode'])
                 else:
-                    print(json.loads(response.text)[
-                          'data']["episode"]["sourceUrls"])
-                    exit()
+                    screen.addstr("Sorry, it looks like we don't have access to this episode right now! If this error continues please insure you have the latest copy of anipy as you may be using an out of date API \n", curses.color_pair(3))
             else:
                 screen.addstr(
                     "There are no episodes for your selected show :(\n", curses.color_pair(3))
                 continue          
 
-
-def play(screen, episode_url):
+def play(episode_url):
     # Create an instance of the player
+
     player = mpv.MPV(player_operation_mode='pseudo-gui',
            script_opts='osc-layout=box,osc-seekbarstyle=bar,osc-deadzonesize=0,osc-minmousemove=3',
            input_default_bindings=True,
@@ -187,7 +190,8 @@ def play(screen, episode_url):
     player.play(episode_url)
     player.wait_for_playback()
     player.terminate()
-    search(screen)
+    print(episode_url)
+    exit()
     
 
 def main(screen):
@@ -214,16 +218,16 @@ def main(screen):
         screen.clear()
 
         # search for the anime
-        episode = search(screen)
+        episode_data = search(screen)
 
         # get the episode url
-        get_episode_url(episode)
-        
+        episode_url = get_episode_url(episode_data, screen)
+
+        # play from the url
+        play(episode_url)
 
     except KeyboardInterrupt:
         print("anipy escaped.")
-        exit()
-
 
 if __name__ == "__main__":
     curses.wrapper(main)
