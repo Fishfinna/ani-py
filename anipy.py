@@ -191,7 +191,10 @@ def play(episode_url):
     player.wait_for_playback()
     player.terminate()
     print(episode_url)
-    exit()
+    post_episode_menu()
+
+def post_episode_menu(episode_number):
+    pass
     
 
 def main(screen):
