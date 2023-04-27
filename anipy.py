@@ -23,11 +23,15 @@ def select(screen, options: list = [], title: str = ""):
         "Use arrow-keys to navigate. Return to submit. Ctl + C to exit. \n",
         curses.color_pair(2),
     )
-    screen.addstr(f"{title}:\n\n", curses.color_pair(1))
+    
+    if title:
+        screen.addstr(f"{title}:\n\n", curses.color_pair(1))
+    else: 
+        screen.addstr("\n\n", curses.color_pair(1))
 
     current_option = 0
     page = 0
-    page_size = min(15, len(options))
+    page_size = min(13, len(options))
     max_page = (len(options) - 1) // page_size
 
     while True:
@@ -98,7 +102,10 @@ def select(screen, options: list = [], title: str = ""):
             "Use arrow-keys to navigate. Return to submit. Ctl + C to exit. \n",
             curses.color_pair(2),
         )
-        screen.addstr(f"{title}:\n\n", curses.color_pair(1))
+        if title:
+            screen.addstr(f"{title}:\n\n", curses.color_pair(1))
+        else:
+            screen.addstr("\n\n", curses.color_pair(1))
 
     selected_index = page_start + current_option
     return (selected_index, options[selected_index])
@@ -162,8 +169,6 @@ def search(screen):
                 url = 'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + anime_list[choice[0]]["_id"] + '","translationType":"' + mode + '","episodeString": "' + str(episode_number) + '"}'
                 try:
                     response = requests.get(url)
-                    # episode_url = [i["sourceUrl"] for i in json.loads(response.text)[
-                    #     'data']["episode"]["sourceUrls"] if i["sourceUrl"].startswith("http://") or i["sourceUrl"].startswith("https://")][0]
                 except:
                     screen.addstr("There was an error finding your episode! Please try again with a different prompt. If this error continues please insure you have the latest copy of anipy as you may be using an out of date API.\n", curses.color_pair(3))
                     continue
@@ -171,7 +176,7 @@ def search(screen):
                 if json.loads(response.text)['data']["episode"]["sourceUrls"]:
                     screen.clear()
                     screen.addstr("Loading the episode...\n",curses.color_pair(2))
-                    return(json.loads(response.text)['data']['episode'])
+                    return(json.loads(response.text)['data']['episode'], anime_list[choice[0]]['availableEpisodes'])
                 else:
                     screen.addstr("Sorry, it looks like we don't have access to this episode right now! If this error continues please insure you have the latest copy of anipy as you may be using an out of date API \n", curses.color_pair(3))
             else:
@@ -181,7 +186,6 @@ def search(screen):
 
 def play(episode_url):
     # Create an instance of the player
-
     player = mpv.MPV(player_operation_mode='pseudo-gui',
            script_opts='osc-layout=box,osc-seekbarstyle=bar,osc-deadzonesize=0,osc-minmousemove=3',
            input_default_bindings=True,
@@ -190,15 +194,21 @@ def play(episode_url):
     player.play(episode_url)
     player.wait_for_playback()
     player.terminate()
-    print(episode_url)
-    post_episode_menu()
 
-def post_episode_menu(episode_number):
-    pass
+
+def post_episode_menu(screen, episode_data, episodes_available):
+    options = ["Replay", "Change Show", "Change Language"]
+
+    if int(episode_data["episodeString"]) < episodes_available[mode]:
+        options = ["Previous Episode"] + options
+
+    if int(episode_data["episodeString"]) > 0 and int(episode_data["episodeString"]) <= episodes_available[mode]:
+        options = ["Next Episode"] + options\
     
+    select(screen, options)
 
 def main(screen):
-    
+
     # project set up
     curses.noecho()
     curses.cbreak()
@@ -221,13 +231,16 @@ def main(screen):
         screen.clear()
 
         # search for the anime
-        episode_data = search(screen)
+        episode_data, episodes_available = search(screen)
 
         # get the episode url
         episode_url = get_episode_url(episode_data, screen)
 
         # play from the url
         play(episode_url)
+
+        # show the post episode menu
+        post_episode_menu(screen, episode_data, episodes_available)
 
     except KeyboardInterrupt:
         print("anipy escaped.")

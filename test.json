@@ -1,0 +1,87 @@
+{
+  "episodeString": "1",
+  "sourceUrls": [
+    {
+      "sourceUrl": "/apivtwo/clock?id=7d2473746a243c246e727276753c292975727463676b67686f286863722975727463676b6f686128766e76396f623b4b525f344b7c613420726f726a633b476d736b672d68692d546f62626a632335472d556e6973756e672d71672d426774632335402d48736d6f73656e6f2d526375722d23343e42736423343f20727f76637573643b555344207573643b2065697063743b5f343f345c5e4f705f51723764514372646b3e72656b6a6d5c417e6a4a5e48696435507c67414372623443725c41407f5c5537736251727662514869675537365c5e48364a5154375f6f3371646b653b242a2475727463676b63744f62243c24706f62636975727463676b6f69242a2462677263243c24343634352b36322b34315236323c33363c3636283636365c247b&referer=",
+      "priority": 7.7,
+      "sourceName": "Luf-mp4",
+      "type": "iframe",
+      "className": "",
+      "streamerId": "allanime"
+    },
+    {
+      "sourceUrl": "https://streamani.net/streaming.php?id=MTY2Mzg2&title=Akuma+no+Riddle%3A+Shousha+wa+Dare%3F+Nukiuchi+Test+%28Dub%29&typesub=SUB&sub=&cover=Y292ZXIvYWt1bWEtbm8tcmlkZGxlLXNob3VzaGEtd2EtZGFyZS1udWtpdWNoaS10ZXN0LWR1Yi5wbmc=",
+      "priority": 4,
+      "sourceName": "Vid-mp4",
+      "type": "iframe",
+      "className": "",
+      "streamerId": "allanime",
+      "downloads": {
+        "sourceName": "Gl",
+        "downloadUrl": "https://anihdplay.com/download?id=MTY2Mzg2&title=Akuma+no+Riddle%3A+Shousha+wa+Dare%3F+Nukiuchi+Test+%28Dub%29&typesub=SUB&sub=&cover=Y292ZXIvYWt1bWEtbm8tcmlkZGxlLXNob3VzaGEtd2EtZGFyZS1udWtpdWNoaS10ZXN0LWR1Yi5wbmc=&sandbox=allow-forms%20allow-scripts%20allow-same-origin%20allow-downloads"
+      }
+    },
+    {
+      "sourceUrl": "https://workfields.backup-server222.lol/7d2473746a243c2429706f62636975294d4a7e336d33403f32706b456743684332296273642937242a2475727463676b63744f62243c245f69737273646347686f6b63247b",
+      "priority": 7.9,
+      "sourceName": "Yt-HD",
+      "type": "player",
+      "className": "",
+      "streamerId": "allanime",
+      "mobile": {
+        "sourceName": "Yt",
+        "downloadUrl": "https://workfields.backup-server222.lol/7d2473746a243c2429706f62636975294d4a7e336d33403f32706b456743684332296273642937242a2475727463676b63744f62243c245f69737273646347686f6b63247b"
+      }
+    },
+    {
+      "sourceUrl": "https://streamsb.net/e/roz6qkefl6iz.html",
+      "priority": 5.5,
+      "sourceName": "Ss-Hls",
+      "type": "iframe",
+      "className": "text-danger",
+      "streamerId": "allanime",
+      "downloads": {
+        "sourceName": "StreamSB",
+        "downloadUrl": "https://streamsb.net/d/roz6qkefl6iz.html&sandbox=allow-forms%20allow-scripts%20allow-same-origin%20allow-downloads"
+      }
+    },
+    {
+      "sourceUrl": "https://mp4upload.com/embed-fdnm02lg7pdy.html",
+      "priority": 4,
+      "sourceName": "Mp4",
+      "type": "iframe",
+      "sandbox": "allow-forms allow-scripts allow-same-origin",
+      "className": "",
+      "streamerId": "allanime"
+    },
+    {
+      "sourceUrl": "https://ok.ru/videoembed/3003212565138",
+      "priority": 3.5,
+      "sourceName": "Ok",
+      "type": "iframe",
+      "sandbox": "allow-forms allow-scripts allow-same-origin",
+      "className": "text-info",
+      "streamerId": "allanime"
+    },
+    {
+      "sourceUrl": "/apivtwo/clock?id=7d2473746a243c2465653435633f59373165303763603732363f363265353e6437353233353136376263303360353f267a2634346737603e633332673660643335346565323f303667676336633331303134267a266b63626f672965653435633f59373165303763603732363f363265353e6437353233353136376263303360353f60363637286c7661267a262a313436762a37363e36762a323e36762a242a2475727463676b63744f62243c24516f7e242a2462677263243c24343634352b36322b34315236323c33363c3636283636365c242a2472746768756a67726f6968527f7663243c24627364247b",
+      "priority": 8.2,
+      "sourceName": "Default",
+      "type": "iframe",
+      "className": "text-info",
+      "streamerId": "allanime"
+    },
+    {
+      "sourceUrl": "/apivtwo/clock?id=7d2473746a243c2429756f7263752967686f6b6329556e6774636226426965736b63687275294d4a7e336d33403f32706b456743684332593759627364286b7632242a2475727463676b63744f62243c24556e67746376696f6872242a2462677263243c24343634352b36322b34315236323c33363c3636283636365c242a2472746768756a67726f6968527f7663243c24627364247b",
+      "priority": 7.4,
+      "sourceName": "S-mp4",
+      "type": "iframe",
+      "className": "",
+      "streamerId": "allanime",
+      "downloads": {
+        "sourceName": "S-mp4",
+        "downloadUrl": "https://blog.allanime.pro/apivtwo/clock/download?id=7d2473746a243c2429756f7263752967686f6b6329556e6774636226426965736b63687275294d4a7e336d33403f32706b456743684332593759627364286b7632242a2475727463676b63744f62243c24556e67746376696f6872247b"
+      }
+    }
+  ]
+}
