@@ -197,7 +197,7 @@ def play(episode_url):
 
 
 def post_episode_menu(screen, episode_data, episodes_available):
-    options = ["Replay", "Change Show", "Change Language"]
+    options = ["Replay", "Change Show", "Change Language", "Exit"]
 
     if int(episode_data["episodeString"]) < episodes_available[mode]:
         options = ["Previous Episode"] + options
@@ -205,7 +205,7 @@ def post_episode_menu(screen, episode_data, episodes_available):
     if int(episode_data["episodeString"]) > 0 and int(episode_data["episodeString"]) <= episodes_available[mode]:
         options = ["Next Episode"] + options\
     
-    select(screen, options)
+    return select(screen, options)
 
 def main(screen):
 
@@ -233,14 +233,16 @@ def main(screen):
         # search for the anime
         episode_data, episodes_available = search(screen)
 
-        # get the episode url
         episode_url = get_episode_url(episode_data, screen)
 
-        # play from the url
         play(episode_url)
 
         # show the post episode menu
-        post_episode_menu(screen, episode_data, episodes_available)
+        next_action = post_episode_menu(screen, episode_data, episodes_available)
+        
+        if next_action[1] == "Exit":
+            exit() # kill it dead!
+        
 
     except KeyboardInterrupt:
         print("anipy escaped.")
