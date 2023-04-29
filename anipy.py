@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+'''
+ notes to self about how this api works:
+ get everything with click?id=
+ take the sourcename as the key for those
+'''
+
+
+
+
 # general imports
 import curses
 import requests
@@ -185,13 +194,15 @@ def search(screen):
                     "There are no episodes for your selected show :(\n", curses.color_pair(3))
                 continue          
 
-def play(episode_url):
+def play_from_url(episode_url):
     # Create an instance of the player
-    player = mpv.MPV(player_operation_mode='pseudo-gui',
-           script_opts='osc-layout=box,osc-seekbarstyle=bar,osc-deadzonesize=0,osc-minmousemove=3',
-           input_default_bindings=True,
-           input_vo_keyboard=True,
-           osc=True)
+    player = mpv.MPV(
+        player_operation_mode='pseudo-gui',
+        script_opts='osc-layout=box,osc-seekbarstyle=bar,osc-deadzonesize=0,osc-minmousemove=3',
+        input_default_bindings=True,
+        input_vo_keyboard=True,
+        osc=True
+    )
     player.play(episode_url)
     player.wait_for_playback()
     player.terminate()
@@ -206,7 +217,15 @@ def post_episode_menu(screen, episode_data, episodes_available):
     if int(episode_data["episodeString"]) > 0 and int(episode_data["episodeString"]) <= episodes_available[mode]:
         options = ["Next Episode"] + options\
     
-    return select(screen, options)
+    return select(screen, options)[1]
+
+def play(screen):
+    # search for the anime
+    episode_data, episodes_available = search(screen)
+    episode_url = get_episode_url(episode_data, screen)
+    play_from_url(episode_url)
+    post_episode_action = post_episode_menu(screen, episode_data, episodes_available)
+    return post_episode_action
 
 def main(screen):
 
@@ -224,28 +243,22 @@ def main(screen):
     curses.init_pair(2, curses.COLOR_BLACK, -1)
     curses.init_pair(3, curses.COLOR_RED, -1)
 
-    try:
+    while True:
         # get the mode
         global mode 
         mode = select(screen, ["Sub (japanese)", "Dub (english)"], "Dub or Sub?")
         mode = "sub" if mode[0] == 0 else "dub"
 
-        # search for the anime
-        episode_data, episodes_available = search(screen)
+        next_action = play(screen)
 
-        episode_url = get_episode_url(episode_data, screen)
+        if next_action == "Exit":
+            break # kill it dead!
+        if next_action == "Change Language":
+            continue
+        if next_action == "Change Show":
 
-        play(episode_url)
 
-        # show the post episode menu
-        next_action = post_episode_menu(screen, episode_data, episodes_available)
-        
-        if next_action[1] == "Exit":
-            exit() # kill it dead!
-        
-
-    except KeyboardInterrupt:
-        print("anipy escaped.")
+    print("exiting ani-py...")
 
 if __name__ == "__main__":
     curses.wrapper(main)
