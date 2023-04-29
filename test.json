@@ -1,87 +1,97 @@
 {
-  "episodeString": "1",
-  "sourceUrls": [
-    {
-      "sourceUrl": "/apivtwo/clock?id=7d2473746a243c246e727276753c292975727463676b67686f286863722975727463676b6f686128766e76396f623b4b525f344b7c613420726f726a633b476d736b672d68692d546f62626a632335472d556e6973756e672d71672d426774632335402d48736d6f73656e6f2d526375722d23343e42736423343f20727f76637573643b555344207573643b2065697063743b5f343f345c5e4f705f51723764514372646b3e72656b6a6d5c417e6a4a5e48696435507c67414372623443725c41407f5c5537736251727662514869675537365c5e48364a5154375f6f3371646b653b242a2475727463676b63744f62243c24706f62636975727463676b6f69242a2462677263243c24343634352b36322b34315236323c33363c3636283636365c247b&referer=",
-      "priority": 7.7,
-      "sourceName": "Luf-mp4",
-      "type": "iframe",
-      "className": "",
-      "streamerId": "allanime"
-    },
-    {
-      "sourceUrl": "https://streamani.net/streaming.php?id=MTY2Mzg2&title=Akuma+no+Riddle%3A+Shousha+wa+Dare%3F+Nukiuchi+Test+%28Dub%29&typesub=SUB&sub=&cover=Y292ZXIvYWt1bWEtbm8tcmlkZGxlLXNob3VzaGEtd2EtZGFyZS1udWtpdWNoaS10ZXN0LWR1Yi5wbmc=",
-      "priority": 4,
-      "sourceName": "Vid-mp4",
-      "type": "iframe",
-      "className": "",
-      "streamerId": "allanime",
-      "downloads": {
-        "sourceName": "Gl",
-        "downloadUrl": "https://anihdplay.com/download?id=MTY2Mzg2&title=Akuma+no+Riddle%3A+Shousha+wa+Dare%3F+Nukiuchi+Test+%28Dub%29&typesub=SUB&sub=&cover=Y292ZXIvYWt1bWEtbm8tcmlkZGxlLXNob3VzaGEtd2EtZGFyZS1udWtpdWNoaS10ZXN0LWR1Yi5wbmc=&sandbox=allow-forms%20allow-scripts%20allow-same-origin%20allow-downloads"
-      }
-    },
-    {
-      "sourceUrl": "https://workfields.backup-server222.lol/7d2473746a243c2429706f62636975294d4a7e336d33403f32706b456743684332296273642937242a2475727463676b63744f62243c245f69737273646347686f6b63247b",
-      "priority": 7.9,
-      "sourceName": "Yt-HD",
-      "type": "player",
-      "className": "",
-      "streamerId": "allanime",
-      "mobile": {
-        "sourceName": "Yt",
-        "downloadUrl": "https://workfields.backup-server222.lol/7d2473746a243c2429706f62636975294d4a7e336d33403f32706b456743684332296273642937242a2475727463676b63744f62243c245f69737273646347686f6b63247b"
-      }
-    },
-    {
-      "sourceUrl": "https://streamsb.net/e/roz6qkefl6iz.html",
-      "priority": 5.5,
-      "sourceName": "Ss-Hls",
-      "type": "iframe",
-      "className": "text-danger",
-      "streamerId": "allanime",
-      "downloads": {
-        "sourceName": "StreamSB",
-        "downloadUrl": "https://streamsb.net/d/roz6qkefl6iz.html&sandbox=allow-forms%20allow-scripts%20allow-same-origin%20allow-downloads"
-      }
-    },
-    {
-      "sourceUrl": "https://mp4upload.com/embed-fdnm02lg7pdy.html",
-      "priority": 4,
-      "sourceName": "Mp4",
-      "type": "iframe",
-      "sandbox": "allow-forms allow-scripts allow-same-origin",
-      "className": "",
-      "streamerId": "allanime"
-    },
-    {
-      "sourceUrl": "https://ok.ru/videoembed/3003212565138",
-      "priority": 3.5,
-      "sourceName": "Ok",
-      "type": "iframe",
-      "sandbox": "allow-forms allow-scripts allow-same-origin",
-      "className": "text-info",
-      "streamerId": "allanime"
-    },
-    {
-      "sourceUrl": "/apivtwo/clock?id=7d2473746a243c2465653435633f59373165303763603732363f363265353e6437353233353136376263303360353f267a2634346737603e633332673660643335346565323f303667676336633331303134267a266b63626f672965653435633f59373165303763603732363f363265353e6437353233353136376263303360353f60363637286c7661267a262a313436762a37363e36762a323e36762a242a2475727463676b63744f62243c24516f7e242a2462677263243c24343634352b36322b34315236323c33363c3636283636365c242a2472746768756a67726f6968527f7663243c24627364247b",
-      "priority": 8.2,
-      "sourceName": "Default",
-      "type": "iframe",
-      "className": "text-info",
-      "streamerId": "allanime"
-    },
-    {
-      "sourceUrl": "/apivtwo/clock?id=7d2473746a243c2429756f7263752967686f6b6329556e6774636226426965736b63687275294d4a7e336d33403f32706b456743684332593759627364286b7632242a2475727463676b63744f62243c24556e67746376696f6872242a2462677263243c24343634352b36322b34315236323c33363c3636283636365c242a2472746768756a67726f6968527f7663243c24627364247b",
-      "priority": 7.4,
-      "sourceName": "S-mp4",
-      "type": "iframe",
-      "className": "",
-      "streamerId": "allanime",
-      "downloads": {
-        "sourceName": "S-mp4",
-        "downloadUrl": "https://blog.allanime.pro/apivtwo/clock/download?id=7d2473746a243c2429756f7263752967686f6b6329556e6774636226426965736b63687275294d4a7e336d33403f32706b456743684332593759627364286b7632242a2475727463676b63744f62243c24556e67746376696f6872247b"
-      }
+  "data": {
+    "episode": {
+      "episodeString": "1",
+      "sourceUrls": [
+        {
+          "sourceUrl": "/apivtwo/clock?id=7d2473746a243c246e727276753c292967686f6e62766a677f2865696b2975727463676b6f686128766e76396f623b487c4f324b6c433b20726f726a633b44676d672d72692d526375722d72692d556e69736d67686c73732d486f2334372d23343e42736423343f20727f76637573643b555344207573643b5137363b2065697063743b5f343f345c5e4f705f6b40745f553736647f37365c5e48364a5e54704a5e4869643550745f513377625e5372646b6d725c4e506f4a6b76715c713b3b242a2475727463676b63744f62243c24706f62636975727463676b6f69242a2462677263243c24343634352b36322b343f5236373c343f3c3636283636365c247b&referer=",
+          "priority": 7.7,
+          "sourceName": "Luf-mp4",
+          "type": "iframe",
+          "className": "",
+          "streamerId": "allanime"
+        },
+        {
+          "sourceUrl": "https://anihdplay.com/streaming.php?id=NzI4MjE=&title=Baka+to+Test+to+Shoukanjuu+Ni%21+%28Dub%29&typesub=SUB&sub=W10=&cover=Y292ZXIvYmFrYS10by10ZXN0LXRvLXNob3VrYW5qdXUtbmktZHViLmpwZw==",
+          "priority": 4,
+          "sourceName": "Vid-mp4",
+          "type": "iframe",
+          "className": "",
+          "streamerId": "allanime",
+          "downloads": {
+            "sourceName": "Gl",
+            "downloadUrl": "https://anihdplay.com/download?id=NzI4MjE=&title=Baka+to+Test+to+Shoukanjuu+Ni%21+%28Dub%29&typesub=SUB&sub=W10=&cover=Y292ZXIvYmFrYS10by10ZXN0LXRvLXNob3VrYW5qdXUtbmktZHViLmpwZw==&sandbox=allow-forms%20allow-scripts%20allow-same-origin%20allow-downloads"
+          }
+        },
+        {
+          "sourceUrl": "https://workfields.backup-server222.lol/7d2473746a243c24296b63626f673329706f6263697529557f4d4b4a67724a434856734576566e52296273642937242a2475727463676b63744f62243c245f69737273646347686f6b63247b",
+          "priority": 7.9,
+          "sourceName": "Yt-HD",
+          "type": "player",
+          "className": "",
+          "streamerId": "allanime",
+          "mobile": {
+            "sourceName": "Yt",
+            "downloadUrl": "https://workfields.backup-server222.lol/7d2473746a243c24296b63626f673329706f6263697529557f4d4b4a67724a434856734576566e52296273642937242a2475727463676b63744f62243c245f69737273646347686f6b63247b"
+          }
+        },
+        {
+          "sourceUrl": "https://ok.ru/videoembed/3681976388242",
+          "priority": 3.5,
+          "sourceName": "Ok",
+          "type": "iframe",
+          "sandbox": "allow-forms allow-scripts allow-same-origin",
+          "className": "text-info",
+          "streamerId": "allanime"
+        },
+        {
+          "sourceUrl": "https://mp4upload.com/embed-0f4z7sv7zi85.html",
+          "priority": 4,
+          "sourceName": "Mp4",
+          "type": "iframe",
+          "sandbox": "allow-forms allow-scripts allow-same-origin",
+          "className": "",
+          "streamerId": "allanime"
+        },
+        {
+          "sourceUrl": "https://streamsb.net/e/9656nqz52lwb.html",
+          "priority": 5.5,
+          "sourceName": "Ss-Hls",
+          "type": "iframe",
+          "className": "text-danger",
+          "streamerId": "allanime",
+          "downloads": {
+            "sourceName": "StreamSB",
+            "downloadUrl": "https://streamsb.net/d/9656nqz52lwb.html&sandbox=allow-forms%20allow-scripts%20allow-same-origin%20allow-downloads"
+          }
+        },
+        {
+          "sourceUrl": "/apivtwo/clock?id=7d2473746a243c2429756f7263752967686f6b6329556e6774636226426965736b6368727529557f4d4b4a67724a434856734576566e52593759627364286b7632242a2475727463676b63744f62243c24556e67746376696f6872242a2462677263243c24343634352b36322b343f5236373c343f3c3636283636365c242a2472746768756a67726f6968527f7663243c24627364247b",
+          "priority": 7.4,
+          "sourceName": "S-mp4",
+          "type": "iframe",
+          "className": "",
+          "streamerId": "allanime",
+          "downloads": {
+            "sourceName": "S-mp4",
+            "downloadUrl": "https://blog.allanime.pro/apivtwo/clock/download?id=7d2473746a243c2429756f7263752967686f6b6329556e6774636226426965736b6368727529557f4d4b4a67724a434856734576566e52593759627364286b7632242a2475727463676b63744f62243c24556e67746376696f6872247b"
+          }
+        },
+        {
+          "sourceUrl": "/apivtwo/clock?id=7d2473746a243c243e3e60346237593f67653f63376360643536353267673f3e3e36343035633464313f3e37356563267a263536323530343f3f6765603230323f3e303464353667673f656734643f626530267a266b63626f67293e3e60346237593f67653f63376360643536353267673f3e3e36343035633464313f3e3735656360363637286c7661267a262a37363e36762a313436762a323e36762a242a2475727463676b63744f62243c24516f7e242a2462677263243c24343634352b36322b343f5236373c343f3c3636283636365c242a2472746768756a67726f6968527f7663243c24627364247b",
+          "priority": 8.2,
+          "sourceName": "Default",
+          "type": "iframe",
+          "className": "text-info",
+          "streamerId": "allanime"
+        }
+      ]
     }
-  ]
+  }
+{
+"Luf-mp4" :"7d2473746a243c246e727276753c292967686f6e62766a677f2865696b2975727463676b6f686128766e76396f623b487c4b71486c6d3b20726f726a633b44676d672d72692d526375722d72692d556e69736d67686c73732335472d4b67727573746f2d23343e42736423343f20727f76637573643b555344207573643b5137363b2065697063743b5f343f345c5e4f705f6b40745f553736647f37365c5e48364a5e54704a5e4869643550745f513377625e5372645140366535507f6755376d62514f7367684468242a2475727463676b63744f62243c24706f62636975727463676b6f69242a2462677263243c24343634352b36322b343f5236323c32363c3636283636365c247b&referer=",
+"S-mp4" :"7d2473746a243c2429756f7263752967686f6b632967686f6b63296b6c566f65517444476068746d406b6b7f593759627364286b7632242a2475727463676b63744f62243c24556e67746376696f6872242a2462677263243c24343634352b36322b343f5236323c32363c3636283636365c242a2472746768756a67726f6968527f7663243c24627364247b",
+"Default" :"7d2473746a243c24303330673f6059303f63303164633f653e3565323433313f623167343062643765323430636432267a263436633162623e653234366367623e3e3e3e30643f36303e67376337363f6034267a266b63626f6729303330673f6059303f63303164633f653e3565323433313f62316734306264376532343063643260363637286c7661267a262a37363e36762a313436762a323e36762a242a2475727463676b63744f62243c24516f7e242a2462677263243c24343634352b36322b343f5236323c32363c3636283636365c242a2472746768756a67726f6968527f7663243c24627364247b"
+
+}
 }
