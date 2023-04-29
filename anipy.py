@@ -152,6 +152,7 @@ def search_prompt(screen):
 
 
 def search(screen):
+    screen.clear()
     while True:
         anime_list = get_anime(search_prompt(screen))
         if not anime_list:
@@ -228,7 +229,6 @@ def main(screen):
         global mode 
         mode = select(screen, ["Sub (japanese)", "Dub (english)"], "Dub or Sub?")
         mode = "sub" if mode[0] == 0 else "dub"
-        screen.clear()
 
         # search for the anime
         episode_data, episodes_available = search(screen)
