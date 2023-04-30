@@ -121,6 +121,7 @@ def select(screen, options: list = [], title: str = ""):
 
 
 def set_mode(screen):
+    global mode
     mode = select(screen, ["Sub (japanese)","Dub (english)"], "Dub or Sub?")
     mode = "sub" if mode[0] == 0 else "dub"
      
@@ -215,11 +216,10 @@ def play_from_url(episode_url):
 
 def post_episode_menu(screen, episode_data, episodes_available):
     options = ["Change Show", "Change Language", "Exit"]
-
-    if int(episode_data["episodeString"]) < episodes_available[mode]:
+    if int(episode_data["episodeString"]) <= episodes_available[mode] and int(episode_data["episodeString"]) > 1:
         options = ["Previous Episode"] + options
 
-    if int(episode_data["episodeString"]) > 0 and int(episode_data["episodeString"]) <= episodes_available[mode]:
+    if int(episode_data["episodeString"]) < episodes_available[mode]:
         options = ["Next Episode"] + options
     
     return select(screen, options)[1], episode_data
@@ -255,28 +255,28 @@ def main(screen):
     curses.init_pair(2, curses.COLOR_BLACK, -1)
     curses.init_pair(3, curses.COLOR_RED, -1)
 
-    # get the mode
-    global mode
     set_mode(screen)
 
     # lets play some anime
-    while True:
-        next_action, episode_played = play(screen)
+    try:
+        while True:
+            next_action, episode_played = play(screen)
 
-        if next_action == "Previous Episode":
-            play_previous_episode(episode_played)
-        elif next_action == "Next Episode":
-            play_next_episode(episode_played)
-        elif next_action == "Change Show":
-            continue
-        elif next_action == "Change Language":
-            main(screen)
-        else:
-            break
-
-
-
-    print("exiting ani-py...")
+            if next_action == "Previous Episode":
+                play_previous_episode(episode_played)
+            elif next_action == "Next Episode":
+                play_next_episode(episode_played)
+            elif next_action == "Change Show":
+                continue
+            elif next_action == "Change Language":
+                main(screen)
+            elif next_action == "Exit":
+                print("exiting ani-py...")
+                exit(0)
+            else:
+                break
+    except KeyboardInterrupt:
+        print("exiting ani-py...")
 
 if __name__ == "__main__":
     curses.wrapper(main)
