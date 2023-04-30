@@ -120,6 +120,11 @@ def select(screen, options: list = [], title: str = ""):
     return (selected_index, options[selected_index])
 
 
+def set_mode(screen):
+    mode = select(screen, ["Sub (japanese)","Dub (english)"], "Dub or Sub?")
+    mode = "sub" if mode[0] == 0 else "dub"
+     
+
 
 def get_anime(prompt):
     url = 'https://api.allanime.to/allanimeapi/?query=query($search:SearchInput$limit:Int$page:Int$translationType:VaildTranslationTypeEnumType$countryOrigin:VaildCountryOriginEnumType){shows(search:$search%20limit:$limit%20page:$page%20translationType:$translationType%20countryOrigin:$countryOrigin){edges{_id%20name%20availableEpisodes%20__typename}}}&variables={"search":{"allowAdult":false,"allowUnknown":false,"query":"' + prompt + '"},"limit":40,"page":1,"translationType":"' + mode + '","countryOrigin":"ALL"}'
@@ -209,15 +214,22 @@ def play_from_url(episode_url):
 
 
 def post_episode_menu(screen, episode_data, episodes_available):
-    options = ["Replay", "Change Show", "Change Language", "Exit"]
+    options = ["Change Show", "Change Language", "Exit"]
 
     if int(episode_data["episodeString"]) < episodes_available[mode]:
         options = ["Previous Episode"] + options
 
     if int(episode_data["episodeString"]) > 0 and int(episode_data["episodeString"]) <= episodes_available[mode]:
-        options = ["Next Episode"] + options\
+        options = ["Next Episode"] + options
     
-    return select(screen, options)[1]
+    return select(screen, options)[1], episode_data
+
+
+def play_previous_episode(current_episode):
+    pass
+
+def play_next_episode(current_episode):
+    pass
 
 def play(screen):
     # search for the anime
@@ -243,19 +255,25 @@ def main(screen):
     curses.init_pair(2, curses.COLOR_BLACK, -1)
     curses.init_pair(3, curses.COLOR_RED, -1)
 
+    # get the mode
+    global mode
+    set_mode(screen)
+
+    # lets play some anime
     while True:
-        # get the mode
-        global mode 
-        mode = select(screen, ["Sub (japanese)", "Dub (english)"], "Dub or Sub?")
-        mode = "sub" if mode[0] == 0 else "dub"
+        next_action, episode_played = play(screen)
 
-        next_action = play(screen)
-
-        if next_action == "Exit":
-            break # kill it dead!
-        if next_action == "Change Language":
+        if next_action == "Previous Episode":
+            play_previous_episode(episode_played)
+        elif next_action == "Next Episode":
+            play_next_episode(episode_played)
+        elif next_action == "Change Show":
             continue
-        if next_action == "Change Show":
+        elif next_action == "Change Language":
+            main(screen)
+        else:
+            break
+
 
 
     print("exiting ani-py...")
