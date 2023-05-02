@@ -182,23 +182,15 @@ def search(screen):
         if choice:
             episode_number = select(screen, [str(i+1) for i in range(anime_list[choice[0]]['availableEpisodes'][mode])], f"C to change Search, L to change language (currently {mode})\nSelect your episode of {anime_list[choice[0]]['name']}")[0] + 1
             if episode_number:
+
                 url = 'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + anime_list[choice[0]]["_id"] + '","translationType":"' + mode + '","episodeString": "' + str(episode_number) + '"}'
-                try:
-                    response = requests.get(url)
-                except:
-                    screen.addstr("There was an error finding your episode! Please try again with a different prompt. If this error continues please insure you have the latest copy of anipy as you may be using an out of date API.\n", curses.color_pair(3))
-                    continue
-                
+                response = requests.get(url)
+
                 if json.loads(response.text)['data']["episode"]["sourceUrls"]:
                     screen.clear()
                     screen.addstr("Loading the episode...\n",curses.color_pair(2))
-                    return(json.loads(response.text)['data']['episode'], anime_list[choice[0]]['availableEpisodes'])
-                else:
-                    screen.addstr("Sorry, it looks like we don't have access to this episode right now! If this error continues please insure you have the latest copy of anipy as you may be using an out of date API \n", curses.color_pair(3))
-            else:
-                screen.addstr(
-                    "There are no episodes for your selected show :(\n", curses.color_pair(3))
-                continue          
+                    return(json.loads(response.text)['data']['episode'], anime_list[choice[0]])
+         
 
 def play_from_url(episode_url):
     # Create an instance of the player
@@ -214,30 +206,32 @@ def play_from_url(episode_url):
     player.terminate()
 
 
-def post_episode_menu(screen, episode_data, episodes_available):
+def post_episode_menu(screen, episode_data, series):
     options = ["Change Show", "Change Language", "Exit"]
-    if int(episode_data["episodeString"]) <= episodes_available[mode] and int(episode_data["episodeString"]) > 1:
+    if int(episode_data["episodeString"]) <= series["availableEpisodes"][mode] and int(episode_data["episodeString"]) > 1:
         options = ["Previous Episode"] + options
 
-    if int(episode_data["episodeString"]) < episodes_available[mode]:
+    if int(episode_data["episodeString"]) < series["availableEpisodes"][mode]:
         options = ["Next Episode"] + options
     
     return select(screen, options)[1], episode_data
 
 
 def play_previous_episode(current_episode):
-    pass
+    episode_number = int(current_episode["episodeString"]) - 1
+    url = 'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + series["_id"] + '","translationType":"' + mode + '","episodeString": "' + str(episode_number) + '"}'
+    exit()
 
-def play_next_episode(current_episode):
+def play_next_episode(current_episode, series):
     pass
 
 def play(screen):
     # search for the anime
-    episode_data, episodes_available = search(screen)
+    episode_data, series = search(screen)
     episode_url = get_episode_url(episode_data, screen)
     play_from_url(episode_url)
-    post_episode_action = post_episode_menu(screen, episode_data, episodes_available)
-    return post_episode_action
+    post_episode_action = post_episode_menu(screen, episode_data, series)
+    return post_episode_action, { "episode_data": episode_data, "series": series }
 
 def main(screen):
 
@@ -260,12 +254,12 @@ def main(screen):
     # lets play some anime
     try:
         while True:
-            next_action, episode_played = play(screen)
+            next_action, episode_data = play(screen)
 
             if next_action == "Previous Episode":
-                play_previous_episode(episode_played)
+                play_previous_episode(episode_data["episode_played"], episode_data["series"])
             elif next_action == "Next Episode":
-                play_next_episode(episode_played)
+                play_next_episode(episode_data['episode_played'], episode_data["series"])
             elif next_action == "Change Show":
                 continue
             elif next_action == "Change Language":
