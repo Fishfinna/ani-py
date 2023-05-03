@@ -6,9 +6,6 @@
  take the sourcename as the key for those
 '''
 
-
-
-
 # general imports
 import curses
 import requests
@@ -21,7 +18,7 @@ if path_to_add not in os.environ["PATH"]:
 import mpv
 
 
-# global vars
+# global vars :(
 mode = ""    
 
 def select(screen, options: list = [], title: str = ""):
@@ -136,8 +133,7 @@ def get_anime(prompt):
 
 
 def get_episode_url(episode_data) -> str:
-    # filter and format
-    episode_url = [i["sourceUrl"] for i in episode_data["sourceUrls"] if i["sourceUrl"].startswith("http://") or i["sourceUrl"].startswith("https://") and i["type"] == "player"]
+    episode_url = [i["sourceUrl"] for i in episode_data["sourceUrls"] if i and i["sourceUrl"].startswith("http://") or i["sourceUrl"].startswith("https://") and i["type"] == "player"]
     if episode_url:
         return episode_url[0]
         
@@ -191,12 +187,7 @@ def search(screen):
 
 def play_from_url(episode_url):
     # Create an instance of the player
-    player = mpv.MPV(
-        player_operation_mode='pseudo-gui',
-        script_opts='osc-layout=box,osc-seekbarstyle=bar,osc-deadzonesize=0,osc-minmousemove=3',
-        input_default_bindings=True,
-        input_vo_keyboard=True,
-        osc=True
+    player = mpv.MPV(player_operation_mode='pseudo-gui', script_opts='osc-layout=box,osc-seekbarstyle=bar,osc-deadzonesize=0,osc-minmousemove=3', input_default_bindings=True, input_vo_keyboard=True, osc=True
     )
     player.play(episode_url)
     player.wait_for_playback()
@@ -230,10 +221,8 @@ def play_following_episode(direction, episode_data, series, screen):
     return post_episode_menu(screen, new_episode_data, series), {"episode": new_episode_data, "series": series}
 
 def play(screen):
-    # search for the anime
     episode_data, series = search(screen)
-    episode_url = get_episode_url(episode_data)
-    play_from_url(episode_url)
+    play_from_url(get_episode_url(episode_data))
     post_episode_action = post_episode_menu(screen, episode_data, series)
     return post_episode_action, { "episode": episode_data, "series": series }
 
