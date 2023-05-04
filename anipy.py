@@ -124,7 +124,7 @@ def set_mode(screen):
      
 
 
-def get_anime(prompt):
+def get_anime_list(prompt):
     url = 'https://api.allanime.to/allanimeapi/?query=query($search:SearchInput$limit:Int$page:Int$translationType:VaildTranslationTypeEnumType$countryOrigin:VaildCountryOriginEnumType){shows(search:$search%20limit:$limit%20page:$page%20translationType:$translationType%20countryOrigin:$countryOrigin){edges{_id%20name%20availableEpisodes%20__typename}}}&variables={"search":{"allowAdult":false,"allowUnknown":false,"query":"' + prompt + '"},"limit":40,"page":1,"translationType":"' + mode + '","countryOrigin":"ALL"}'
     response = requests.get(url)
     response.raise_for_status()
@@ -132,10 +132,35 @@ def get_anime(prompt):
     return json.loads(response.text)['data']['shows']['edges']
 
 
-def get_episode_url(episode_data) -> str:
-    episode_url = [i["sourceUrl"] for i in episode_data["sourceUrls"] if i and i["sourceUrl"].startswith("http://") or i["sourceUrl"].startswith("https://") and i["type"] == "player"]
-    if episode_url:
-        return episode_url[0]
+def get_episode_url(episode_data, series) -> str:
+
+    episode_number = episode_data["episodeString"]
+    series_id = series["_id"]
+
+    
+    query_str = '''
+    query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {
+    episode(
+        showId: $showId
+        translationType: $translationType
+        episodeString: $episodeString
+    )   
+        {
+            episodeString
+            sourceUrls
+        }
+    }
+    '''
+
+    url = 'https://api.allanime.to/allanimeapi?query= query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={ "showId":  "' + series_id + '", "translationType": "' + mode + '", "episodeString": "' + episode_number + '"}'''
+    referer = "https://allanime.to"
+    headers = {"Referer": referer}
+
+    response = requests.get(url, headers=headers)
+    print(json.loads(response.text))
+    exit()
+
+    
         
 
 def search_prompt(screen):
@@ -162,7 +187,7 @@ def search_prompt(screen):
 def search(screen):
     screen.clear()
     while True:
-        anime_list = get_anime(search_prompt(screen))
+        anime_list = get_anime_list(search_prompt(screen))
         if not anime_list:
             screen.addstr("No results found. Please try again with a different prompt.\n", curses.color_pair(3))
             continue
@@ -215,14 +240,14 @@ def play_following_episode(direction, episode_data, series, screen):
 
     url = 'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + series["_id"] + '","translationType":"' + mode + '","episodeString": "' + str(episode_number) + '"}'
     response = requests.get(url)
-    play_from_url(get_episode_url(json.loads(response.text)['data']["episode"]))
+    play_from_url(get_episode_url(json.loads(response.text)['data']["episode"], series))
 
     new_episode_data = json.loads(response.text)['data']["episode"]
     return post_episode_menu(screen, new_episode_data, series), {"episode": new_episode_data, "series": series}
 
 def play(screen):
     episode_data, series = search(screen)
-    play_from_url(get_episode_url(episode_data))
+    play_from_url(get_episode_url(episode_data, series))
     post_episode_action = post_episode_menu(screen, episode_data, series)
     return post_episode_action, { "episode": episode_data, "series": series }
 
