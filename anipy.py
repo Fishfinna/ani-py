@@ -137,7 +137,9 @@ def get_episode_url(episode_data, series) -> str:
     episode_number = episode_data["episodeString"]
     series_id = series["_id"]
 
-    
+    url = 'https://api.allanime.to/allanimeapi?query= query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={ "showId":  "' + series_id + '", "translationType": "' + mode + '", "episodeString": "' + episode_number + '"}'''
+    referer = "https://allanime.to"
+    headers = {"Referer": referer}
     query_str = '''
     query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {
     episode(
@@ -152,12 +154,11 @@ def get_episode_url(episode_data, series) -> str:
     }
     '''
 
-    url = 'https://api.allanime.to/allanimeapi?query= query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={ "showId":  "' + series_id + '", "translationType": "' + mode + '", "episodeString": "' + episode_number + '"}'''
-    referer = "https://allanime.to"
-    headers = {"Referer": referer}
-
     response = requests.get(url, headers=headers)
-    print(json.loads(response.text))
+    response_data = json.loads(response.text)["data"]["episode"]["sourceUrls"]
+    
+    sources = {i["sourceName"] : i["sourceUrl"].split("clock?id=")[1] for i in response_data if "clock?id=" in i["sourceUrl"]}
+    print(sources)
     exit()
 
     
