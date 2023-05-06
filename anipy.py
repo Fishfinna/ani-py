@@ -1,38 +1,38 @@
 #!/usr/bin/env python3
 
-'''
+"""
  notes to self about how this api works:
  get everything with click?id=
  take the sourcename as the key for those
-'''
+"""
 
 # general imports
 import curses
 import requests
 import json
 import os
+
 path_to_add = os.path.dirname(__file__)
 if path_to_add not in os.environ["PATH"]:
-    os.environ["PATH"] = os.path.dirname(
-        __file__) + os.pathsep + os.environ["PATH"]
+    os.environ["PATH"] = os.path.dirname(__file__) + os.pathsep + os.environ["PATH"]
 import mpv
 
 
 # global vars :(
-mode = ""    
+mode = ""
+
 
 def select(screen, options: list = [], title: str = ""):
-
     # Set up screen
     screen.clear()
     screen.addstr(
         "Use arrow-keys to navigate. Return to submit. Ctl + C to exit. \n",
         curses.color_pair(2),
     )
-    
+
     if title:
         screen.addstr(f"{title}:\n\n", curses.color_pair(1))
-    else: 
+    else:
         screen.addstr("\n\n", curses.color_pair(1))
 
     current_option = 0
@@ -43,7 +43,7 @@ def select(screen, options: list = [], title: str = ""):
     while True:
         # Show options for current page
         page_start = page * page_size
-        page_options = options[page_start: page_start + page_size]
+        page_options = options[page_start : page_start + page_size]
 
         for i, option in enumerate(page_options):
             if i == current_option:
@@ -77,7 +77,10 @@ def select(screen, options: list = [], title: str = ""):
                 if max_page > 0 and page > 0:
                     page -= 1
         elif key in [curses.KEY_DOWN, ord("s")]:
-            if current_option < page_size - 1 and current_option < len(page_options) - 1:
+            if (
+                current_option < page_size - 1
+                and current_option < len(page_options) - 1
+            ):
                 current_option += 1
             else:
                 current_option = 0
@@ -93,11 +96,11 @@ def select(screen, options: list = [], title: str = ""):
                 current_option = min(current_option, len(page_options) - 1)
         elif key == ord("\n"):
             break
-        elif key == ord('c') and "C to change Search" in title:
+        elif key == ord("c") and "C to change Search" in title:
             screen.clear()
             search(screen)
             return (None, None)
-        elif key == ord('l') and "L to change language" in title:
+        elif key == ord("l") and "L to change language" in title:
             screen.clear()
             main(screen)
             return (None, None)
@@ -119,28 +122,41 @@ def select(screen, options: list = [], title: str = ""):
 
 def set_mode(screen):
     global mode
-    mode = select(screen, ["Sub (japanese)","Dub (english)"], "Dub or Sub?")
+    mode = select(screen, ["Sub (japanese)", "Dub (english)"], "Dub or Sub?")
     mode = "sub" if mode[0] == 0 else "dub"
-     
 
 
 def get_anime_list(prompt):
-    url = 'https://api.allanime.to/allanimeapi/?query=query($search:SearchInput$limit:Int$page:Int$translationType:VaildTranslationTypeEnumType$countryOrigin:VaildCountryOriginEnumType){shows(search:$search%20limit:$limit%20page:$page%20translationType:$translationType%20countryOrigin:$countryOrigin){edges{_id%20name%20availableEpisodes%20__typename}}}&variables={"search":{"allowAdult":false,"allowUnknown":false,"query":"' + prompt + '"},"limit":40,"page":1,"translationType":"' + mode + '","countryOrigin":"ALL"}'
+    url = (
+        'https://api.allanime.to/allanimeapi/?query=query($search:SearchInput$limit:Int$page:Int$translationType:VaildTranslationTypeEnumType$countryOrigin:VaildCountryOriginEnumType){shows(search:$search%20limit:$limit%20page:$page%20translationType:$translationType%20countryOrigin:$countryOrigin){edges{_id%20name%20availableEpisodes%20__typename}}}&variables={"search":{"allowAdult":false,"allowUnknown":false,"query":"'
+        + prompt
+        + '"},"limit":40,"page":1,"translationType":"'
+        + mode
+        + '","countryOrigin":"ALL"}'
+    )
     response = requests.get(url)
     response.raise_for_status()
 
-    return json.loads(response.text)['data']['shows']['edges']
+    return json.loads(response.text)["data"]["shows"]["edges"]
 
 
 def get_episode_url(episode_data, series) -> str:
-
     episode_number = episode_data["episodeString"]
     series_id = series["_id"]
 
-    url = 'https://api.allanime.to/allanimeapi?query= query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={ "showId":  "' + series_id + '", "translationType": "' + mode + '", "episodeString": "' + episode_number + '"}'''
+    url = (
+        'https://api.allanime.to/allanimeapi?query= query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={ "showId":  "'
+        + series_id
+        + '", "translationType": "'
+        + mode
+        + '", "episodeString": "'
+        + episode_number
+        + '"}'
+        ""
+    )
     referer = "https://allanime.to"
     headers = {"Referer": referer}
-    query_str = '''
+    query_str = """
     query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {
     episode(
         showId: $showId
@@ -152,17 +168,24 @@ def get_episode_url(episode_data, series) -> str:
             sourceUrls
         }
     }
-    '''
+    """
 
     response = requests.get(url, headers=headers)
     response_data = json.loads(response.text)["data"]["episode"]["sourceUrls"]
-    
-    sources = {i["sourceName"] : i["sourceUrl"].split("clock?id=")[1] for i in response_data if "clock?id=" in i["sourceUrl"]}
-    print(sources)
+
+    sources = {
+        i["sourceName"]: i["sourceUrl"].split("clock?id=")[1]
+        for i in response_data
+        if "clock?id=" in i["sourceUrl"]
+    }
+
+    referer_url = f"https://allanimenews.com/apivtwo/clock.json?id="
+    referer_header = {"Referer": "https://allanime.to"}
+    referer_response = requests.get(referer_url, headers=referer_header)
+    response.raise_for_status()
+    print(referer_response)
     exit()
 
-    
-        
 
 def search_prompt(screen):
     while True:
@@ -190,30 +213,64 @@ def search(screen):
     while True:
         anime_list = get_anime_list(search_prompt(screen))
         if not anime_list:
-            screen.addstr("No results found. Please try again with a different prompt.\n", curses.color_pair(3))
+            screen.addstr(
+                "No results found. Please try again with a different prompt.\n",
+                curses.color_pair(3),
+            )
             continue
         try:
-            choice = select(screen, [str(i['name'].replace("[","").replace("]","")) for i in anime_list],
-                            f"C to change Search, L to change language (currently {mode})")
+            choice = select(
+                screen,
+                [str(i["name"].replace("[", "").replace("]", "")) for i in anime_list],
+                f"C to change Search, L to change language (currently {mode})",
+            )
         except:
-            screen.addstr("\nYour search failed. Please try again with a different prompt.\n", curses.color_pair(3))
+            screen.addstr(
+                "\nYour search failed. Please try again with a different prompt.\n",
+                curses.color_pair(3),
+            )
             continue
         if choice:
-            episode_number = select(screen, [str(i+1) for i in range(anime_list[choice[0]]['availableEpisodes'][mode])], f"C to change Search, L to change language (currently {mode})\nSelect your episode of {anime_list[choice[0]]['name']}")[0] + 1
+            episode_number = (
+                select(
+                    screen,
+                    [
+                        str(i + 1)
+                        for i in range(anime_list[choice[0]]["availableEpisodes"][mode])
+                    ],
+                    f"C to change Search, L to change language (currently {mode})\nSelect your episode of {anime_list[choice[0]]['name']}",
+                )[0]
+                + 1
+            )
             if episode_number:
-
-                url = 'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + anime_list[choice[0]]["_id"] + '","translationType":"' + mode + '","episodeString": "' + str(episode_number) + '"}'
+                url = (
+                    'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"'
+                    + anime_list[choice[0]]["_id"]
+                    + '","translationType":"'
+                    + mode
+                    + '","episodeString": "'
+                    + str(episode_number)
+                    + '"}'
+                )
                 response = requests.get(url)
 
-                if json.loads(response.text)['data']["episode"]["sourceUrls"]:
+                if json.loads(response.text)["data"]["episode"]["sourceUrls"]:
                     screen.clear()
-                    screen.addstr("Loading the episode...\n",curses.color_pair(2))
-                    return(json.loads(response.text)['data']['episode'], anime_list[choice[0]])
-         
+                    screen.addstr("Loading the episode...\n", curses.color_pair(2))
+                    return (
+                        json.loads(response.text)["data"]["episode"],
+                        anime_list[choice[0]],
+                    )
+
 
 def play_from_url(episode_url):
     # Create an instance of the player
-    player = mpv.MPV(player_operation_mode='pseudo-gui', script_opts='osc-layout=box,osc-seekbarstyle=bar,osc-deadzonesize=0,osc-minmousemove=3', input_default_bindings=True, input_vo_keyboard=True, osc=True
+    player = mpv.MPV(
+        player_operation_mode="pseudo-gui",
+        script_opts="osc-layout=box,osc-seekbarstyle=bar,osc-deadzonesize=0,osc-minmousemove=3",
+        input_default_bindings=True,
+        input_vo_keyboard=True,
+        osc=True,
     )
     player.play(episode_url)
     player.wait_for_playback()
@@ -222,38 +279,56 @@ def play_from_url(episode_url):
 
 def post_episode_menu(screen, episode_data, series):
     options = ["Change Show", "Change Language", "Exit"]
-    if int(episode_data["episodeString"]) <= series["availableEpisodes"][mode] and int(episode_data["episodeString"]) > 1:
+    if (
+        int(episode_data["episodeString"]) <= series["availableEpisodes"][mode]
+        and int(episode_data["episodeString"]) > 1
+    ):
         options = ["Previous Episode"] + options
 
     if int(episode_data["episodeString"]) < series["availableEpisodes"][mode]:
         options = ["Next Episode"] + options
-    return select(screen, options, f"You were just watching {series['name']}, episode {episode_data['episodeString']}")[1]
+    return select(
+        screen,
+        options,
+        f"You were just watching {series['name']}, episode {episode_data['episodeString']}",
+    )[1]
 
 
 def play_following_episode(direction, episode_data, series, screen):
     episode_number = int(episode_data["episodeString"])
-    
+
     if direction == "prev":
         episode_number -= 1
     if direction == "next":
         episode_number += 1
 
-
-    url = 'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + series["_id"] + '","translationType":"' + mode + '","episodeString": "' + str(episode_number) + '"}'
+    url = (
+        'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"'
+        + series["_id"]
+        + '","translationType":"'
+        + mode
+        + '","episodeString": "'
+        + str(episode_number)
+        + '"}'
+    )
     response = requests.get(url)
-    play_from_url(get_episode_url(json.loads(response.text)['data']["episode"], series))
+    play_from_url(get_episode_url(json.loads(response.text)["data"]["episode"], series))
 
-    new_episode_data = json.loads(response.text)['data']["episode"]
-    return post_episode_menu(screen, new_episode_data, series), {"episode": new_episode_data, "series": series}
+    new_episode_data = json.loads(response.text)["data"]["episode"]
+    return post_episode_menu(screen, new_episode_data, series), {
+        "episode": new_episode_data,
+        "series": series,
+    }
+
 
 def play(screen):
     episode_data, series = search(screen)
     play_from_url(get_episode_url(episode_data, series))
     post_episode_action = post_episode_menu(screen, episode_data, series)
-    return post_episode_action, { "episode": episode_data, "series": series }
+    return post_episode_action, {"episode": episode_data, "series": series}
+
 
 def main(screen):
-
     # project set up
     curses.noecho()
     curses.cbreak()
@@ -276,24 +351,28 @@ def main(screen):
 
         while True:
             if next_action == "Previous Episode":
-                next_action, episode_data = play_following_episode("prev", episode_data["episode"], episode_data["series"], screen)
-                
+                next_action, episode_data = play_following_episode(
+                    "prev", episode_data["episode"], episode_data["series"], screen
+                )
+
             elif next_action == "Next Episode":
-                next_action, episode_data = play_following_episode("next", episode_data["episode"], episode_data["series"], screen)
-                
+                next_action, episode_data = play_following_episode(
+                    "next", episode_data["episode"], episode_data["series"], screen
+                )
+
             elif next_action == "Change Show":
                 next_action, episode_data = play(screen)
-            
+
             elif next_action == "Change Language":
                 main(screen)
-            
+
             elif next_action == "Exit":
                 print("exiting ani-py...")
                 exit()
-            
 
     except KeyboardInterrupt:
         print("exiting ani-py...")
+
 
 if __name__ == "__main__":
     curses.wrapper(main)
