@@ -179,11 +179,12 @@ def get_episode_url(episode_data, series) -> str:
         if "clock?id=" in i["sourceUrl"]
     }
 
-    referer_url = f"https://allanimenews.com/apivtwo/clock.json?id="
-    referer_header = {"Referer": "https://allanime.to"}
-    referer_response = requests.get(referer_url, headers=referer_header)
-    response.raise_for_status()
-    print(referer_response)
+    for source in sources.values():
+        referer_url = f"https://allanimenews.com/apivtwo/clock.json?id={source}"
+        referer_header = {"Referer": "https://allanime.to"}
+        referer_response = requests.get(referer_url, headers=referer_header)
+        response.raise_for_status()
+        print(referer_response)
     exit()
 
 
