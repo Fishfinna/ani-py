@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-"""
- notes to self about how this api works:
- get everything with click?id=
- take the sourcename as the key for those
-"""
-
 # general imports
 import curses
 import requests
@@ -140,52 +134,16 @@ def get_anime_list(prompt):
     return json.loads(response.text)["data"]["shows"]["edges"]
 
 
-def get_episode_url(episode_data, series) -> str:
-    episode_number = episode_data["episodeString"]
-    series_id = series["_id"]
-
-    url = (
-        'https://api.allanime.to/allanimeapi?query= query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={ "showId":  "'
-        + series_id
-        + '", "translationType": "'
-        + mode
-        + '", "episodeString": "'
-        + episode_number
-        + '"}'
-        ""
-    )
-    referer = "https://allanime.to"
-    headers = {"Referer": referer}
-    query_str = """
-    query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {
-    episode(
-        showId: $showId
-        translationType: $translationType
-        episodeString: $episodeString
-    )   
-        {
-            episodeString
-            sourceUrls
-        }
-    }
-    """
-
-    response = requests.get(url, headers=headers)
-    response_data = json.loads(response.text)["data"]["episode"]["sourceUrls"]
-
-    sources = {
-        i["sourceName"]: i["sourceUrl"].split("clock?id=")[1]
-        for i in response_data
-        if "clock?id=" in i["sourceUrl"]
-    }
-
-    for source in sources.values():
-        referer_url = f"https://allanimenews.com/apivtwo/clock.json?id={source}"
-        referer_header = {"Referer": "https://allanime.to"}
-        referer_response = requests.get(referer_url, headers=referer_header)
-        response.raise_for_status()
-        print(referer_response)
-    exit()
+def get_episode_url(episode_data) -> str:
+    episode_url = [
+        i["sourceUrl"]
+        for i in episode_data["sourceUrls"]
+        if i["sourceUrl"].startswith("http://")
+        or i["sourceUrl"].startswith("https://")
+        and i["type"] == "player"
+    ]
+    if episode_url:
+        return episode_url[0]
 
 
 def search_prompt(screen):
@@ -313,7 +271,7 @@ def play_following_episode(direction, episode_data, series, screen):
         + '"}'
     )
     response = requests.get(url)
-    play_from_url(get_episode_url(json.loads(response.text)["data"]["episode"], series))
+    play_from_url(get_episode_url(json.loads(response.text)["data"]["episode"]))
 
     new_episode_data = json.loads(response.text)["data"]["episode"]
     return post_episode_menu(screen, new_episode_data, series), {
@@ -324,7 +282,7 @@ def play_following_episode(direction, episode_data, series, screen):
 
 def play(screen):
     episode_data, series = search(screen)
-    play_from_url(get_episode_url(episode_data, series))
+    play_from_url(get_episode_url(episode_data))
     post_episode_action = post_episode_menu(screen, episode_data, series)
     return post_episode_action, {"episode": episode_data, "series": series}
 
