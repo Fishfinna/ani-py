@@ -9,3 +9,6 @@ clone from the repository, I would recommend doing this in a directory that you 
 ```
 git clone https://github.com/Fishfinna/anipy.git
 ```
+
+Next you will need a copy of MPV
+there are several ways of downloading MPV depending on your os
