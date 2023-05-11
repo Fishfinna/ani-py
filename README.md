@@ -12,3 +12,8 @@ git clone https://github.com/Fishfinna/anipy.git
 
 Next you will need a copy of MPV
 there are several ways of downloading MPV depending on your os
+
+the easiest way to install MPV is with the following link:
+[https://mpv.io/installation/]
+
+However, there are some alterantives.
