@@ -1,6 +1,7 @@
-# anipy
+# ani-py
 
 a python tool for watching anime, directly from the command line.
+Based on the ani-cli application.
 
 # Getting Started
 
