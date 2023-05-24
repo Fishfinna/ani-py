@@ -237,7 +237,7 @@ def play_from_url(episode_url):
 
 
 def post_episode_menu(screen, episode_data, series):
-    options = ["Change Show", "Change Language", "Exit"]
+    options = ["Replay", "Change Show", "Change Language", "Exit"]
     if (
         int(episode_data["episodeString"]) <= series["availableEpisodes"][mode]
         and int(episode_data["episodeString"]) > 1
@@ -261,15 +261,8 @@ def play_following_episode(direction, episode_data, series, screen):
     if direction == "next":
         episode_number += 1
 
-    url = (
-        'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"'
-        + series["_id"]
-        + '","translationType":"'
-        + mode
-        + '","episodeString": "'
-        + str(episode_number)
-        + '"}'
-    )
+    url = 'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + series["_id"]+ '","translationType":"'+ mode+ '","episodeString": "'+ str(episode_number)+ '"}'
+
     response = requests.get(url)
     play_from_url(get_episode_url(json.loads(response.text)["data"]["episode"]))
 
@@ -318,6 +311,9 @@ def main(screen):
                 next_action, episode_data = play_following_episode(
                     "next", episode_data["episode"], episode_data["series"], screen
                 )
+            
+            elif next_action == "Replay":
+                next_action, episode_data = play_following_episode(None, episode_data["episode"], episode_data["series"], screen)
 
             elif next_action == "Change Show":
                 next_action, episode_data = play(screen)
