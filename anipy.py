@@ -14,6 +14,7 @@ import mpv
 
 # global vars :(
 mode = ""
+referer = "https://allanime.to"
 
 
 def select(screen, options: list = [], title: str = ""):
@@ -122,13 +123,13 @@ def set_mode(screen):
 
 def get_anime_list(prompt):
     url = (
-        'https://api.allanime.to/allanimeapi/?query=query($search:SearchInput$limit:Int$page:Int$translationType:VaildTranslationTypeEnumType$countryOrigin:VaildCountryOriginEnumType){shows(search:$search%20limit:$limit%20page:$page%20translationType:$translationType%20countryOrigin:$countryOrigin){edges{_id%20name%20availableEpisodes%20__typename}}}&variables={"search":{"allowAdult":false,"allowUnknown":false,"query":"'
+        'https://api.allanime.day/allanimeapi/?query=query($search:SearchInput$limit:Int$page:Int$translationType:VaildTranslationTypeEnumType$countryOrigin:VaildCountryOriginEnumType){shows(search:$search%20limit:$limit%20page:$page%20translationType:$translationType%20countryOrigin:$countryOrigin){edges{_id%20name%20availableEpisodes%20__typename}}}&variables={"search":{"allowAdult":false,"allowUnknown":false,"query":"'
         + prompt
         + '"},"limit":40,"page":1,"translationType":"'
         + mode
         + '","countryOrigin":"ALL"}'
     )
-    response = requests.get(url)
+    response = requests.get(url, headers={"Referer": referer})
     response.raise_for_status()
 
     return json.loads(response.text)["data"]["shows"]["edges"]
@@ -144,6 +145,9 @@ def get_episode_url(episode_data) -> str:
     ]
     if episode_url:
         return episode_url[0]
+    else:
+        print("no episode url found")
+        exit()
 
 
 def search_prompt(screen):
@@ -203,7 +207,7 @@ def search(screen):
             )
             if episode_number:
                 url = (
-                    'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"'
+                    'https://api.allanime.day/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"'
                     + anime_list[choice[0]]["_id"]
                     + '","translationType":"'
                     + mode
@@ -211,7 +215,7 @@ def search(screen):
                     + str(episode_number)
                     + '"}'
                 )
-                response = requests.get(url)
+                response = requests.get(url, headers={"Referer": referer})
 
                 if json.loads(response.text)["data"]["episode"]["sourceUrls"]:
                     screen.clear()
@@ -261,9 +265,9 @@ def play_following_episode(direction, episode_data, series, screen):
     if direction == "next":
         episode_number += 1
 
-    url = 'https://api.allanime.to/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + series["_id"]+ '","translationType":"'+ mode+ '","episodeString": "'+ str(episode_number)+ '"}'
+    url = 'https://api.allanime.day/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + series["_id"] + '","translationType":"'+ mode + '","episodeString": "'+ str(episode_number) + '"}'
 
-    response = requests.get(url)
+    response = requests.get(url, headers={"Referer": referer})
     play_from_url(get_episode_url(json.loads(response.text)["data"]["episode"]))
 
     new_episode_data = json.loads(response.text)["data"]["episode"]
