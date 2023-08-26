@@ -5,6 +5,7 @@ import curses
 import requests
 import json
 import os
+import re
 
 path_to_add = os.path.dirname(__file__)
 if path_to_add not in os.environ["PATH"]:
@@ -136,6 +137,8 @@ def get_anime_list(prompt):
 
 
 def get_episode_url(episode_data) -> str:
+    print(json.dumps(episode_data["sourceUrls"], indent=4))
+
     episode_url = [
         i["sourceUrl"]
         for i in episode_data["sourceUrls"]
@@ -215,6 +218,7 @@ def search(screen):
                     + str(episode_number)
                     + '"}'
                 )
+                print(url)
                 response = requests.get(url, headers={"Referer": referer})
 
                 if json.loads(response.text)["data"]["episode"]["sourceUrls"]:
@@ -266,7 +270,6 @@ def play_following_episode(direction, episode_data, series, screen):
         episode_number += 1
 
     url = 'https://api.allanime.day/allanimeapi?query=query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {    episode(        showId: $showId        translationType: $translationType        episodeString: $episodeString    ) {        episodeString sourceUrls    }}&variables={"showId":"' + series["_id"] + '","translationType":"'+ mode + '","episodeString": "'+ str(episode_number) + '"}'
-
     response = requests.get(url, headers={"Referer": referer})
     play_from_url(get_episode_url(json.loads(response.text)["data"]["episode"]))
 
